@@ -2,7 +2,7 @@ bl_info = {
     'name': 'Advanced Boomsmash',
     'author': 'Luciano Muñoz & Cristian Hasbun',
     'version': (0, 11),
-    'blender': (2, 7, 1),
+    'blender': (2, 80, 0),
     'location': 'View3D > Tools > Animation > Boomsmash',
     'description': 'Have quick access for opengl previews without the need to change your render settings',
     'warning': "It's very first beta! The addon is in progress!",
@@ -139,7 +139,7 @@ class DoBoom(bpy.types.Operator):
 
         #guardo settings
         old_use_stamp = rd.use_stamp
-        old_onlyrender = sd.show_only_render
+        old_onlyrender = sd.overlay.show_overlays
         old_simplify = rd.use_simplify 
         old_filepath = rd.filepath
         old_alpha_mode = rd.alpha_mode
@@ -149,7 +149,7 @@ class DoBoom(bpy.types.Operator):
 
         #afecto settings originales
         rd.use_stamp = boom_props.use_stamp
-        sd.show_only_render = boom_props.onlyrender
+        sd.overlay.show_overlays = boom_props.onlyrender
         if boom_props.unsimplify:
             rd.use_simplify = False
         rd.filepath = cs.boom_props.dirname + cs.boom_props.filename
@@ -170,7 +170,7 @@ class DoBoom(bpy.types.Operator):
  
         #devuelvo settings
         rd.use_stamp = old_use_stamp
-        sd.show_only_render = old_onlyrender
+        sd.overlay.show_overlays = old_onlyrender
         rd.use_simplify = old_simplify
         rd.filepath = old_filepath
         rd.alpha_mode = old_alpha_mode
@@ -242,7 +242,7 @@ def draw_boomsmash_panel(context, layout):
 
 class VIEW3D_PT_tools_animation_boomsmash(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = 'UI'
     bl_category = 'Animation'
     bl_context = 'objectmode'
     bl_label = ' '
@@ -260,7 +260,7 @@ class VIEW3D_PT_tools_animation_boomsmash(bpy.types.Panel):
 
 class VIEW3D_PT_tools_pose_animation_boomsmash(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
+    bl_region_type = 'UI'
     bl_category = 'Tools'
     bl_context = 'posemode'
     bl_label = ' '
@@ -275,8 +275,18 @@ class VIEW3D_PT_tools_pose_animation_boomsmash(bpy.types.Panel):
         draw_boomsmash_panel(context, layout)
         
         
+classes = (
+    DoBoom,
+    BoomProps,
+    setDirname,
+    setFilename,
+    VIEW3D_PT_tools_pose_animation_boomsmash,
+    VIEW3D_PT_tools_animation_boomsmash
+)
+
 def register():
-    bpy.utils.register_module(__name__)
+    for cls in classes:
+        bpy.utils.register_class(cls)
 
     bpy.types.Scene.boom_props = PointerProperty(
             type = BoomProps, name = 'BoomSmash Properties', description = '')
@@ -286,7 +296,9 @@ def register():
 
 
 def unregister():
-    bpy.utils.unregister_module(__name__)
+    for cls in classes:
+        bpy.utils.unregister_class(cls)
+
     del bpy.types.Scene.boom_props
     del bpy.types.WindowManager.boom_props
 
